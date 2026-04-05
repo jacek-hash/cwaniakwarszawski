@@ -1,0 +1,1500 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Czarna Lista — Cwaniak Warszawski</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600&family=Jost:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #111010;
+    --charcoal: #1C1B1A;
+    --dark: #242220;
+    --ecru: #F2EDE4;
+    --cream: #EAE3D6;
+    --gold: #C9A96E;
+    --gold-light: #E8D5A3;
+    --gold-dark: #9A7A48;
+    --red: #9B2335;
+    --red-bright: #C42B3F;
+    --red-dim: rgba(155,35,53,0.08);
+    --green-deep: #2A3D35;
+    --text-muted: #8A8070;
+    --text-light: #CCC5B8;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--ecru);
+    font-family: 'Jost', sans-serif;
+    font-weight: 300;
+    cursor: none;
+    overflow-x: hidden;
+  }
+
+  /* GRAIN */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+    opacity: 0.032; pointer-events: none; z-index: 9990;
+  }
+
+  /* CURSOR */
+  .cursor {
+    position: fixed; width: 10px; height: 10px;
+    background: var(--gold); border-radius: 50%;
+    pointer-events: none; z-index: 9999;
+    transform: translate(-50%,-50%);
+    transition: width .2s, height .2s; mix-blend-mode: difference;
+  }
+  .cursor-ring {
+    position: fixed; width: 36px; height: 36px;
+    border: 1px solid var(--gold); border-radius: 50%;
+    pointer-events: none; z-index: 9998;
+    transform: translate(-50%,-50%);
+    transition: all .12s ease; opacity: .6;
+  }
+
+  /* NAVBAR */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    padding: 0 60px; height: 72px;
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(17,16,16,.9); backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(201,169,110,.15);
+  }
+  .nav-logo {
+    font-family: 'Cormorant Garamond', serif; font-size: 18px;
+    font-weight: 600; letter-spacing: .08em; color: var(--ecru);
+    text-decoration: none; display: flex; align-items: center; gap: 10px;
+  }
+  .nav-logo .logo-mark {
+    width: 28px; height: 28px; border: 1px solid var(--gold);
+    transform: rotate(45deg); display: flex; align-items: center;
+    justify-content: center; flex-shrink: 0;
+  }
+  .nav-logo .logo-mark span { display: block; width: 10px; height: 10px; background: var(--gold); }
+  .nav-links { display: flex; align-items: center; gap: 40px; list-style: none; }
+  .nav-links a {
+    font-size: 11px; letter-spacing: .25em; text-transform: uppercase;
+    color: var(--text-light); text-decoration: none; transition: color .3s; font-weight: 400;
+  }
+  .nav-links a:hover, .nav-links a.active { color: var(--gold); }
+  .nav-cta {
+    background: transparent; border: 1px solid var(--red); color: var(--ecru);
+    padding: 10px 24px; font-family: 'Jost', sans-serif; font-size: 11px;
+    letter-spacing: .2em; text-transform: uppercase; cursor: none;
+    transition: all .3s; position: relative; overflow: hidden; text-decoration: none;
+  }
+  .nav-cta::before {
+    content: ''; position: absolute; inset: 0; background: var(--red);
+    transform: translateX(-100%); transition: transform .3s ease;
+  }
+  .nav-cta:hover::before { transform: translateX(0); }
+  .nav-cta span { position: relative; z-index: 1; }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(28px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes ticker {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+  @keyframes drawLine {
+    from { transform: scaleX(0); }
+    to   { transform: scaleX(1); }
+  }
+  .reveal {
+    opacity: 0; transform: translateY(32px);
+    transition: opacity .75s ease, transform .75s ease;
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  .reveal-delay-1 { transition-delay: .1s; }
+  .reveal-delay-2 { transition-delay: .2s; }
+  .reveal-delay-3 { transition-delay: .3s; }
+  .reveal-delay-4 { transition-delay: .4s; }
+
+  /* ===================== HERO ===================== */
+  #hero {
+    min-height: 100vh;
+    padding: 120px 60px 80px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+  }
+  #hero::after {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 60% 70% at 5% 50%, rgba(155,35,53,.07) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 50% at 95% 20%, rgba(201,169,110,.04) 0%, transparent 50%);
+    pointer-events: none;
+  }
+
+  /* Vertical ruled lines bg */
+  .hero-rules {
+    position: absolute; inset: 0; pointer-events: none;
+    background: repeating-linear-gradient(
+      90deg, transparent, transparent 119px,
+      rgba(201,169,110,.04) 119px, rgba(201,169,110,.04) 120px
+    );
+  }
+
+  /* Red vertical accent */
+  .hero-red-bar {
+    position: absolute; left: 60px; top: 0; bottom: 0;
+    width: 3px;
+    background: linear-gradient(180deg, transparent, var(--red) 20%, var(--red) 80%, transparent);
+    opacity: .25;
+  }
+
+  .hero-left { position: relative; z-index: 2; }
+
+  .hero-eyebrow {
+    font-family: 'DM Mono', monospace; font-size: 10px;
+    letter-spacing: .35em; color: var(--red); text-transform: uppercase;
+    margin-bottom: 24px; display: flex; align-items: center; gap: 14px;
+    animation: fadeUp .7s ease both;
+  }
+  .hero-eyebrow::before {
+    content: ''; display: block; width: 24px; height: 1px; background: var(--red);
+  }
+
+  .hero-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(56px, 6.5vw, 100px);
+    font-weight: 700; line-height: .9; letter-spacing: -.02em;
+    margin-bottom: 32px; animation: fadeUp .7s .1s ease both;
+  }
+  .hero-title em { font-style: italic; font-weight: 300; color: var(--gold); display: block; }
+  .hero-title .strike-word {
+    position: relative; color: rgba(242,237,228,.25);
+  }
+  .hero-title .strike-word::after {
+    content: ''; position: absolute;
+    left: 0; right: 0; top: 50%; height: 2px;
+    background: var(--red); transform-origin: left;
+    animation: drawLine .6s .8s ease both;
+  }
+
+  .hero-intro {
+    font-size: 14px; line-height: 1.9; color: var(--text-light);
+    max-width: 400px; margin-bottom: 40px;
+    animation: fadeUp .7s .2s ease both;
+    border-left: 2px solid var(--red); padding-left: 20px;
+  }
+
+  .hero-count-box {
+    display: inline-flex; flex-direction: column;
+    border: 1px solid rgba(201,169,110,.2); padding: 20px 32px;
+    animation: fadeUp .7s .3s ease both;
+    position: relative;
+  }
+  .hero-count-box::before {
+    content: ''; position: absolute; top: -1px; left: -1px;
+    width: 16px; height: 16px;
+    border-top: 2px solid var(--gold); border-left: 2px solid var(--gold);
+  }
+  .hero-count-box::after {
+    content: ''; position: absolute; bottom: -1px; right: -1px;
+    width: 16px; height: 16px;
+    border-bottom: 2px solid var(--gold); border-right: 2px solid var(--gold);
+  }
+  .count-num {
+    font-family: 'Cormorant Garamond', serif; font-size: 72px;
+    font-weight: 700; line-height: 1; color: var(--red);
+  }
+  .count-label {
+    font-family: 'DM Mono', monospace; font-size: 9px;
+    letter-spacing: .3em; color: var(--text-muted);
+    text-transform: uppercase; margin-top: 4px;
+  }
+
+  /* Right side manifesto */
+  .hero-right {
+    position: relative; z-index: 2;
+    display: flex; flex-direction: column; gap: 0;
+  }
+  .manifesto-quote {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(28px, 3vw, 44px); font-weight: 300;
+    line-height: 1.2; color: var(--ecru);
+    animation: fadeUp .7s .15s ease both;
+    position: relative; padding-left: 32px;
+  }
+  .manifesto-quote::before {
+    content: '"';
+    font-size: 120px; color: var(--red); opacity: .15;
+    position: absolute; left: -16px; top: -24px;
+    font-family: 'Cormorant Garamond', serif; line-height: 1;
+  }
+  .manifesto-quote em { color: var(--gold); font-style: italic; }
+  .manifesto-author {
+    font-family: 'DM Mono', monospace; font-size: 10px;
+    letter-spacing: .2em; color: var(--text-muted);
+    text-transform: uppercase; margin-top: 20px; margin-left: 32px;
+    animation: fadeUp .7s .25s ease both;
+  }
+  .manifesto-author span { color: var(--gold); }
+
+  /* Deco bottom line */
+  .hero-deco-line {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--red) 20%, var(--red-bright) 50%, var(--red) 80%, transparent);
+    opacity: .3;
+  }
+
+  /* ===================== TICKER ===================== */
+  .ticker-wrap {
+    background: var(--red); overflow: hidden; padding: 14px 0;
+    position: relative;
+    border-top: 1px solid rgba(255,255,255,.08);
+    border-bottom: 1px solid rgba(0,0,0,.3);
+  }
+  .ticker-inner {
+    display: flex; gap: 0; width: max-content;
+    animation: ticker 38s linear infinite;
+  }
+  .ticker-item {
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    letter-spacing: .25em; text-transform: uppercase;
+    color: rgba(242,237,228,.8); white-space: nowrap;
+    padding: 0 40px;
+    display: flex; align-items: center; gap: 40px;
+  }
+  .ticker-item::after {
+    content: '◆'; color: rgba(242,237,228,.3); font-size: 7px;
+  }
+
+  /* ===================== INTRO STATS BAR ===================== */
+  .stats-bar {
+    background: rgba(201,169,110,.1);
+    padding: 0;
+  }
+  .stats-bar-inner {
+    display: grid;
+    grid-template-columns: repeat(4,1fr);
+    gap: 1px;
+    width: 100%;
+  }
+  .stats-bar-inner {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+  }
+  .stat-block {
+    background: var(--charcoal);
+    padding: 32px 32px; text-align: center;
+  }
+  .stat-block-num {
+    font-family: 'Cormorant Garamond', serif; font-size: 52px;
+    font-weight: 700; line-height: 1; color: var(--ecru); margin-bottom: 6px;
+  }
+  .stat-block-num span { color: var(--gold); }
+  .stat-block-label {
+    font-family: 'DM Mono', monospace; font-size: 9px;
+    letter-spacing: .22em; color: var(--text-muted);
+    text-transform: uppercase; line-height: 1.5;
+  }
+
+  /* ===================== LISTA SECTION ===================== */
+  #lista {
+    padding: 100px 60px;
+    position: relative; overflow: hidden;
+    background: var(--black);
+  }
+  #lista::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--red), transparent);
+    opacity: .25;
+  }
+
+  /* Diagonal faint pattern */
+  #lista .lista-bg {
+    position: absolute; inset: 0; pointer-events: none;
+    background: repeating-linear-gradient(
+      -60deg, transparent, transparent 80px,
+      rgba(155,35,53,.012) 80px, rgba(155,35,53,.012) 81px
+    );
+  }
+
+  .lista-header {
+    display: grid; grid-template-columns: 1fr auto;
+    align-items: end; margin-bottom: 72px; position: relative; z-index: 1;
+  }
+  .section-label {
+    font-family: 'DM Mono', monospace; font-size: 10px;
+    letter-spacing: .3em; color: var(--red); text-transform: uppercase;
+    display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
+  }
+  .section-label::after {
+    content: ''; display: block; width: 40px; height: 1px;
+    background: var(--red); opacity: .6;
+  }
+  .lista-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(52px, 6vw, 84px);
+    font-weight: 300; line-height: .92;
+  }
+  .lista-title em { font-style: italic; color: var(--gold); }
+  .lista-subtitle {
+    font-size: 12px; color: var(--text-muted);
+    letter-spacing: .1em; max-width: 180px;
+    text-align: right; line-height: 1.7;
+  }
+
+  /* ===================== KATEGORIE TABS ===================== */
+  .tabs-wrap {
+    display: flex; gap: 2px; margin-bottom: 48px;
+    position: relative; z-index: 1; flex-wrap: wrap;
+  }
+  .tab-btn {
+    background: var(--charcoal); border: 1px solid rgba(201,169,110,.12);
+    color: var(--text-muted); padding: 10px 22px;
+    font-family: 'DM Mono', monospace; font-size: 9px;
+    letter-spacing: .25em; text-transform: uppercase;
+    cursor: none; transition: all .25s;
+  }
+  .tab-btn:hover:not(.active) { border-color: rgba(201,169,110,.35); color: var(--ecru); }
+  .tab-btn.active { background: var(--red); border-color: var(--red); color: #111010; font-weight: 500; }
+
+  /* ===================== CARDS GRID ===================== */
+  .cards-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1px; background: rgba(201,169,110,.1);
+    position: relative; z-index: 1;
+  }
+
+  /* Featured wide card */
+  .fault-card {
+    background: var(--charcoal); padding: 40px 36px;
+    position: relative; overflow: hidden;
+    transition: background .35s;
+    cursor: none;
+    border-top: 2px solid transparent;
+    transition: background .35s, border-top-color .35s;
+  }
+  .fault-card:hover { background: #1E1D1C; border-top-color: var(--red); }
+  .fault-card.featured {
+    grid-column: span 2;
+    background: rgba(155,35,53,.06);
+    border-top-color: var(--red);
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 40px; align-items: start;
+  }
+  .fault-card.featured:hover { background: rgba(155,35,53,.1); }
+
+  /* Deco geo in corner */
+  .card-geo {
+    position: absolute; bottom: -24px; right: -24px;
+    width: 100px; height: 100px;
+    border: 1px solid rgba(201,169,110,.07);
+    transform: rotate(45deg); pointer-events: none;
+    transition: opacity .35s;
+  }
+  .fault-card:hover .card-geo { opacity: .25; }
+
+  /* Card top row */
+  .card-top {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 22px;
+  }
+  .card-num {
+    font-family: 'DM Mono', monospace; font-size: 10px;
+    letter-spacing: .3em; color: var(--red); opacity: .8;
+  }
+  .card-cat-tag {
+    font-size: 8px; letter-spacing: .2em; text-transform: uppercase;
+    border: 1px solid rgba(155,35,53,.35); color: rgba(200,120,130,.8);
+    padding: 3px 9px; background: rgba(155,35,53,.08);
+  }
+
+  .card-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px; font-weight: 600; color: var(--ecru);
+    line-height: 1.1; margin-bottom: 8px;
+  }
+  .card-title em { color: var(--gold); font-style: italic; }
+
+  .card-sub {
+    font-size: 10px; letter-spacing: .15em; text-transform: uppercase;
+    color: var(--text-muted); margin-bottom: 20px;
+  }
+
+  .card-body {
+    font-size: 13px; line-height: 1.85; color: var(--text-light);
+    margin-bottom: 20px;
+  }
+
+  /* Cwaniak inline comment */
+  .card-cwaniak {
+    background: rgba(201,169,110,.06);
+    border-left: 2px solid var(--gold);
+    padding: 12px 16px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 14px; font-style: italic;
+    color: var(--gold-light); line-height: 1.6;
+    margin-top: 4px;
+  }
+  .card-cwaniak::before {
+    content: '— Cwaniak: ';
+    font-family: 'DM Mono', monospace; font-size: 9px;
+    letter-spacing: .2em; text-transform: uppercase;
+    color: var(--gold); font-style: normal; opacity: .7;
+    display: block; margin-bottom: 4px;
+  }
+
+  /* Severity badge */
+  .severity {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 18px;
+  }
+  .severity-dots {
+    display: flex; gap: 4px;
+  }
+  .sev-dot {
+    width: 8px; height: 8px; border-radius: 0;
+    transform: rotate(45deg); background: rgba(155,35,53,.2);
+    border: 1px solid rgba(155,35,53,.25);
+  }
+  .sev-dot.on { background: var(--red); border-color: var(--red); }
+  .severity-label {
+    font-family: 'DM Mono', monospace; font-size: 8px;
+    letter-spacing: .2em; color: var(--text-muted); text-transform: uppercase;
+  }
+
+  /* Impact tag */
+  .impact-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 9px; letter-spacing: .15em; text-transform: uppercase;
+    color: var(--text-muted); border: 1px solid rgba(201,169,110,.1);
+    padding: 4px 10px; margin-top: 12px;
+  }
+  .impact-tag.high { border-color: rgba(155,35,53,.4); color: rgba(200,120,130,.8); }
+  .impact-tag.mid { border-color: rgba(201,169,110,.3); color: rgba(201,169,110,.7); }
+  .impact-tag.low { border-color: rgba(42,61,53,.6); color: #6BA88A; }
+
+  /* ===================== FEATURED CARD EXTRAS ===================== */
+  .featured-num-huge {
+    font-family: 'Cormorant Garamond', serif; font-size: 180px;
+    font-weight: 700; line-height: .85; color: rgba(155,35,53,.1);
+    position: absolute; right: -10px; bottom: -30px;
+    pointer-events: none; user-select: none;
+  }
+
+  /* ===================== SEPARATOR ===================== */
+  .art-deco-banner {
+    background: var(--green-deep); padding: 24px 60px;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden; position: relative;
+  }
+  .art-deco-banner::before, .art-deco-banner::after {
+    content: ''; position: absolute; top: 0; bottom: 0; width: 40%;
+    background: repeating-linear-gradient(
+      90deg, transparent, transparent 8px,
+      rgba(201,169,110,.07) 8px, rgba(201,169,110,.07) 9px
+    );
+  }
+  .art-deco-banner::before { left: 0; }
+  .art-deco-banner::after  { right: 0; }
+  .banner-text {
+    font-family: 'Cormorant Garamond', serif; font-size: 14px;
+    font-style: italic; color: var(--gold-light); letter-spacing: .08em;
+    text-align: center; position: relative; z-index: 1; padding: 0 40px;
+    line-height: 1.6;
+  }
+  .banner-ornament { color: var(--gold); font-size: 18px; opacity: .5; z-index: 1; flex-shrink: 0; }
+
+  /* ===================== PRINCIPLES — CWANIAK SPOSÓB ===================== */
+  #principles {
+    background: var(--ecru); color: var(--black);
+    padding: 100px 60px; position: relative; overflow: hidden;
+  }
+  #principles::before {
+    content: ''; position: absolute; inset: 0;
+    background: repeating-linear-gradient(
+      0deg, transparent, transparent 39px,
+      rgba(0,0,0,.03) 39px, rgba(0,0,0,.03) 40px
+    );
+    pointer-events: none;
+  }
+
+  .principles-header {
+    text-align: center; margin-bottom: 72px; position: relative; z-index: 1;
+  }
+  .principles-eyebrow {
+    font-family: 'DM Mono', monospace; font-size: 10px;
+    letter-spacing: .35em; color: var(--red); text-transform: uppercase;
+    display: flex; align-items: center; justify-content: center; gap: 14px; margin-bottom: 20px;
+  }
+  .principles-eyebrow::before, .principles-eyebrow::after {
+    content: ''; display: block; width: 24px; height: 1px; background: var(--red);
+  }
+  .principles-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(44px, 5vw, 72px); font-weight: 300; line-height: 1; color: var(--black);
+  }
+  .principles-title em { font-style: italic; color: var(--red); }
+
+  .principles-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 1px; background: rgba(0,0,0,.08);
+    position: relative; z-index: 1;
+  }
+  .principle-item {
+    background: var(--ecru); padding: 40px 28px;
+    position: relative; transition: background .3s;
+    border-top: 2px solid transparent;
+    transition: background .3s, border-top-color .3s;
+  }
+  .principle-item:hover { background: var(--cream); border-top-color: var(--red); }
+  .principle-num {
+    font-family: 'Cormorant Garamond', serif; font-size: 64px;
+    font-weight: 700; color: rgba(0,0,0,.07); line-height: 1;
+    margin-bottom: 16px;
+  }
+  .principle-title {
+    font-family: 'Cormorant Garamond', serif; font-size: 22px;
+    font-weight: 600; color: var(--black); margin-bottom: 10px; line-height: 1.2;
+  }
+  .principle-title em { color: var(--red); font-style: italic; }
+  .principle-body {
+    font-size: 13px; line-height: 1.8; color: #4A4540;
+  }
+
+  /* ===================== CTA SECTION ===================== */
+  #cta {
+    background: var(--charcoal);
+    padding: 100px 60px;
+    text-align: center; position: relative; overflow: hidden;
+  }
+  #cta::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 60% 60% at 50% 100%, rgba(155,35,53,.08), transparent 60%);
+    pointer-events: none;
+  }
+  .cta-geo {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%,-50%) rotate(45deg);
+    width: 600px; height: 600px;
+    border: 1px solid rgba(201,169,110,.04);
+    pointer-events: none;
+  }
+  .cta-geo-2 {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%,-50%) rotate(45deg);
+    width: 400px; height: 400px;
+    border: 1px solid rgba(201,169,110,.06);
+    pointer-events: none;
+  }
+  .cta-eyebrow {
+    font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: .35em;
+    color: var(--gold); text-transform: uppercase; margin-bottom: 20px;
+    position: relative; z-index: 1;
+  }
+  .cta-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(52px, 6vw, 88px); font-weight: 300;
+    line-height: .95; margin-bottom: 24px; position: relative; z-index: 1;
+  }
+  .cta-title em { color: var(--gold); font-style: italic; }
+  .cta-sub {
+    font-size: 14px; color: var(--text-light); max-width: 440px;
+    margin: 0 auto 44px; line-height: 1.8; position: relative; z-index: 1;
+  }
+  .cta-btns {
+    display: flex; gap: 16px; justify-content: center;
+    position: relative; z-index: 1;
+  }
+  .btn-primary {
+    background: var(--gold); color: var(--black);
+    padding: 16px 48px; border: none;
+    font-family: 'Jost', sans-serif; font-size: 11px;
+    font-weight: 600; letter-spacing: .28em; text-transform: uppercase;
+    cursor: none; text-decoration: none; display: inline-flex;
+    align-items: center; gap: 10px;
+    position: relative; overflow: hidden; transition: all .3s;
+  }
+  .btn-primary::before {
+    content: ''; position: absolute; inset: 0;
+    background: var(--gold-light); transform: translateX(-100%); transition: transform .3s;
+  }
+  .btn-primary:hover::before { transform: translateX(0); }
+  .btn-primary span { position: relative; z-index: 1; }
+  .btn-secondary {
+    background: transparent; border: 1px solid rgba(201,169,110,.4);
+    color: var(--ecru); padding: 16px 48px;
+    font-family: 'Jost', sans-serif; font-size: 11px;
+    letter-spacing: .28em; text-transform: uppercase;
+    cursor: none; text-decoration: none; display: inline-flex;
+    align-items: center; position: relative; overflow: hidden; transition: all .3s;
+  }
+  .btn-secondary::before {
+    content: ''; position: absolute; inset: 0;
+    background: rgba(201,169,110,.1); transform: translateX(-100%); transition: transform .3s;
+  }
+  .btn-secondary:hover::before { transform: translateX(0); }
+  .btn-secondary span { position: relative; z-index: 1; }
+
+  /* FOOTER */
+  footer {
+    background: var(--black); border-top: 1px solid rgba(201,169,110,.1);
+    padding: 48px 60px;
+    display: grid; grid-template-columns: 1fr auto 1fr; gap: 40px; align-items: center;
+  }
+  .footer-logo {
+    font-family: 'Cormorant Garamond', serif; font-size: 16px;
+    font-weight: 600; letter-spacing: .08em; color: var(--ecru);
+    display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
+  }
+  .footer-tagline { font-size: 11px; color: var(--text-muted); letter-spacing: .08em; line-height: 1.7; }
+  .footer-copy { font-size: 10px; letter-spacing: .15em; color: var(--text-muted); text-align: center; line-height: 1.9; }
+  .footer-right { text-align: right; }
+  .footer-phone { font-family: 'Cormorant Garamond', serif; font-size: 22px; color: var(--ecru); display: block; margin-bottom: 6px; }
+  .footer-address { font-size: 11px; color: var(--text-muted); letter-spacing: .08em; line-height: 1.8; }
+
+  /* FOOTNOTE CITATIONS */
+  sup.cite {
+    font-family: 'DM Mono', monospace;
+    font-size: 8px; font-style: normal;
+    color: var(--gold); letter-spacing: .05em;
+    vertical-align: super; margin-left: 2px;
+    opacity: .85; cursor: none;
+    text-decoration: none;
+    transition: opacity .2s;
+    display: inline;
+  }
+  sup.cite:hover { opacity: 1; }
+  /* Cite on dark ecru bg (principles section) */
+  #principles sup.cite { color: var(--red-bright); }
+
+  /* Footnote legend in sources header */
+  .cite-legend {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin-bottom: 24px;
+  }
+  .cite-badge {
+    font-family: 'DM Mono', monospace; font-size: 9px;
+    letter-spacing: .15em; color: var(--text-muted);
+    border: 1px solid rgba(201,169,110,.15);
+    padding: 4px 10px; display: inline-flex; gap: 6px;
+    align-items: center;
+  }
+  .cite-badge span { color: var(--gold); }
+
+  .zrodla-grid {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    gap: 1px;
+    background: rgba(201,169,110,.08);
+  }
+  @media (max-width: 1024px) {
+    .zrodla-grid { grid-template-columns: repeat(2,1fr); }
+  }
+  @media (max-width: 768px) {
+    .zrodla-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ===================== HAMBURGER ===================== */
+  .nav-hamburger {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    background: none;
+    border: none;
+    cursor: none;
+    padding: 4px;
+    z-index: 1100;
+  }
+  .nav-hamburger span {
+    display: block;
+    width: 22px; height: 1px;
+    background: var(--gold);
+    transition: transform .3s, opacity .3s, width .3s;
+    transform-origin: center;
+  }
+  .nav-hamburger.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+  .nav-hamburger.open span:nth-child(2) { opacity: 0; width: 0; }
+  .nav-hamburger.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+  /* Mobile nav drawer */
+  .nav-drawer {
+    display: none;
+    position: fixed;
+    top: 72px; left: 0; right: 0;
+    background: rgba(17,16,16,.97);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(201,169,110,.15);
+    z-index: 999;
+    padding: 28px 24px 36px;
+    flex-direction: column;
+    gap: 0;
+    transform: translateY(-8px);
+    opacity: 0;
+    transition: transform .3s ease, opacity .3s ease;
+    pointer-events: none;
+  }
+  .nav-drawer.open {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: all;
+  }
+  .nav-drawer a {
+    display: block;
+    font-size: 13px; letter-spacing: .25em; text-transform: uppercase;
+    color: var(--text-light); text-decoration: none;
+    padding: 16px 0;
+    border-bottom: 1px solid rgba(201,169,110,.08);
+    transition: color .2s;
+    font-weight: 400;
+  }
+  .nav-drawer a:hover, .nav-drawer a.active { color: var(--gold); }
+  .nav-drawer .drawer-cta {
+    margin-top: 20px;
+    background: transparent;
+    border: 1px solid var(--red);
+    color: var(--ecru);
+    padding: 14px 24px;
+    font-size: 11px; letter-spacing: .2em; text-transform: uppercase;
+    text-align: center;
+    display: block;
+  }
+
+  /* ===================== TABLET — max 1024px ===================== */
+  @media (max-width: 1024px) {
+    nav { padding: 0 32px; }
+    #hero { padding: 110px 40px 72px; gap: 48px; }
+    #lista { padding: 80px 40px; }
+    .cards-grid { grid-template-columns: repeat(2,1fr); }
+    .fault-card.featured { grid-column: span 2; }
+    .principles-grid { grid-template-columns: repeat(2,1fr); }
+    #principles { padding: 80px 40px; }
+    #cta { padding: 80px 40px; }
+    footer { padding: 48px 40px; }
+    #zrodla { padding: 60px 40px 48px !important; }
+  }
+
+  /* ===================== MOBILE — max 768px ===================== */
+  @media (max-width: 768px) {
+    /* Hide custom cursor on touch */
+    .cursor, .cursor-ring { display: none !important; }
+    body { cursor: auto; }
+    a, button { cursor: pointer; }
+
+    /* Nav */
+    nav { padding: 0 20px; height: 64px; }
+    .nav-links { display: none; }
+    .nav-cta { display: none; }
+    .nav-hamburger { display: flex; }
+    .nav-drawer { display: flex; }
+
+    /* Hero */
+    #hero {
+      grid-template-columns: 1fr;
+      padding: 90px 20px 60px;
+      gap: 0;
+      min-height: auto;
+    }
+    .hero-right { display: none; }
+    .hero-red-bar { left: 20px; opacity: .15; }
+    .hero-eyebrow { font-size: 9px; }
+    .hero-title { font-size: clamp(48px, 14vw, 72px); margin-bottom: 20px; }
+    .hero-intro { font-size: 13px; margin-bottom: 28px; }
+    .hero-count-box { padding: 16px 24px; }
+    .count-num { font-size: 56px; }
+
+    /* Ticker */
+    .ticker-item { padding: 0 24px; font-size: 10px; }
+
+    /* Stats bar */
+    .stats-bar { padding: 0; }
+    .stats-bar-inner {
+      grid-template-columns: repeat(2,1fr) !important;
+    }
+    .stat-block { padding: 24px 16px; }
+    .stat-block-num { font-size: 38px; }
+
+    /* Lista section */
+    #lista { padding: 56px 20px; }
+    .lista-header {
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-bottom: 40px;
+    }
+    .lista-subtitle { text-align: left; max-width: 100%; }
+    .lista-title { font-size: clamp(40px, 11vw, 64px); }
+
+    /* Tabs */
+    .tabs-wrap {
+      gap: 4px;
+      margin-bottom: 28px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      flex-wrap: nowrap;
+      padding-bottom: 4px;
+    }
+    .tabs-wrap::-webkit-scrollbar { display: none; }
+    .tab-btn {
+      flex-shrink: 0;
+      padding: 9px 16px;
+      font-size: 8px;
+    }
+
+    /* Cards */
+    .cards-grid { grid-template-columns: 1fr; }
+    .fault-card { padding: 28px 20px; }
+    .fault-card.featured {
+      grid-column: span 1;
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+    .featured-num-huge { display: none; }
+    .card-title { font-size: 24px; }
+    .card-geo { display: none; }
+
+    /* Art deco banner */
+    .art-deco-banner { padding: 20px 20px; }
+    .banner-text { font-size: 13px; padding: 0 12px; }
+
+    /* Principles */
+    #principles { padding: 56px 20px; }
+    .principles-grid { grid-template-columns: 1fr; }
+    .principle-item { padding: 28px 20px; }
+    .principles-title { font-size: clamp(36px, 10vw, 56px); }
+
+    /* CTA */
+    #cta { padding: 56px 20px; }
+    .cta-title { font-size: clamp(44px, 12vw, 72px); }
+    .cta-sub { font-size: 13px; margin-bottom: 32px; }
+    .cta-btns { flex-direction: column; align-items: stretch; }
+    .btn-primary, .btn-secondary {
+      justify-content: center;
+      padding: 16px 24px;
+      text-align: center;
+    }
+
+    /* Sources */
+    #zrodla { padding: 48px 20px 40px !important; }
+    #zrodla > div > div:last-of-type {
+      grid-template-columns: 1fr !important;
+    }
+    .cite-legend { gap: 6px; }
+    .cite-badge { font-size: 8px; padding: 4px 8px; }
+
+    /* Footer */
+    footer {
+      grid-template-columns: 1fr;
+      text-align: center;
+      padding: 40px 20px;
+      gap: 28px;
+    }
+    .footer-right { text-align: center; }
+    .footer-logo { justify-content: center; }
+  }
+
+  /* ===================== SMALL PHONES — max 480px ===================== */
+  @media (max-width: 480px) {
+    .stats-bar-inner {
+      grid-template-columns: 1fr !important;
+    }
+    .stat-block { padding: 20px 16px; border-bottom: 1px solid rgba(201,169,110,.08); }
+    .stat-block:last-child { border-bottom: none; }
+
+    .hero-title { font-size: clamp(44px, 16vw, 64px); }
+    .hero-count-box { width: 100%; }
+
+    .fault-card { padding: 24px 16px; }
+    .card-title { font-size: 22px; }
+
+    .principle-num { font-size: 48px; }
+
+    .art-deco-banner { padding: 16px 16px; }
+    .banner-ornament { display: none; }
+
+    footer { padding: 32px 16px; }
+    .footer-phone { font-size: 18px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- NAVBAR -->
+<nav id="navbar">
+  <a href="cwaniak-warszawski__2_.html" class="nav-logo">
+    <div class="logo-mark"><span></span></div>
+    Cwaniak Warszawski
+  </a>
+  <ul class="nav-links">
+    <li><a href="cwaniak-warszawski__2_.html#about">O Mnie</a></li>
+    <li><a href="cwaniak-warszawski__2_.html#rewiry">Rewiry</a></li>
+    <li><a href="cwaniak-warszawski__2_.html#jak-dzialamy">Jak Działam</a></li>
+    <li><a href="cwaniak-quiz.html">Quiz</a></li>
+    <li><a href="#" class="active">Czarna Lista</a></li>
+  </ul>
+  <a href="cwaniak-warszawski__2_.html#kontakt" class="nav-cta"><span>Gadamy?</span></a>
+  <button class="nav-hamburger" id="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- Mobile drawer -->
+<div class="nav-drawer" id="navDrawer">
+  <a href="cwaniak-warszawski__2_.html#about">O Mnie</a>
+  <a href="cwaniak-warszawski__2_.html#rewiry">Rewiry</a>
+  <a href="cwaniak-warszawski__2_.html#jak-dzialamy">Jak Działam</a>
+  <a href="cwaniak-quiz.html">Quiz</a>
+  <a href="#" class="active">Czarna Lista</a>
+  <a href="cwaniak-warszawski__2_.html#kontakt" class="drawer-cta">☎ Gadamy?</a>
+</div>
+
+<!-- ===================== HERO ===================== -->
+<section id="hero">
+  <div class="hero-rules"></div>
+  <div class="hero-red-bar"></div>
+
+  <div class="hero-left">
+    <div class="hero-eyebrow">Manifest Jakości</div>
+    <h1 class="hero-title">
+      <span class="strike-word">Dobry</span><br>
+      Zły<br>
+      <em>Agent.</em>
+    </h1>
+    <p class="hero-intro">
+      Branża nieruchomości w Polsce kuleje — nie dlatego, że rynek jest trudny, ale dlatego że za wielu agentów robi za mało. Poniżej lista grzechów, które niszczą zaufanie klientów i reputację całego zawodu.
+    </p>
+    <div class="hero-count-box">
+      <div class="count-num">14</div>
+      <div class="count-label">Grzechów Głównych Branży</div>
+    </div>
+  </div>
+
+  <div class="hero-right">
+    <div class="manifesto-quote">
+      „W tym zawodzie nie wystarczy <em>otworzyć drzwi</em> do mieszkania. Trzeba otworzyć je na właściwe."
+    </div>
+    <div class="manifesto-author">— <span>Cwaniak Warszawski</span>, 15 lat w branży</div>
+  </div>
+
+  <div class="hero-deco-line"></div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker-wrap" aria-hidden="true">
+  <div class="ticker-inner" id="ticker">
+    <div class="ticker-item">Brak znajomości rynku</div>
+    <div class="ticker-item">Ukryte prowizje</div>
+    <div class="ticker-item">Złe zdjęcia</div>
+    <div class="ticker-item">Nienegocjowana cena</div>
+    <div class="ticker-item">Brak due diligence</div>
+    <div class="ticker-item">Fałszywy optymizm</div>
+    <div class="ticker-item">Brak po-sprzedażowego wsparcia</div>
+    <div class="ticker-item">Masowe OLX</div>
+    <div class="ticker-item">Znikający po podpisaniu umowy</div>
+    <div class="ticker-item">Brak znajomości rynku</div>
+    <div class="ticker-item">Ukryte prowizje</div>
+    <div class="ticker-item">Złe zdjęcia</div>
+    <div class="ticker-item">Nienegocjowana cena</div>
+    <div class="ticker-item">Brak due diligence</div>
+    <div class="ticker-item">Fałszywy optymizm</div>
+    <div class="ticker-item">Brak po-sprzedażowego wsparcia</div>
+    <div class="ticker-item">Masowe OLX</div>
+    <div class="ticker-item">Znikający po podpisaniu umowy</div>
+  </div>
+</div>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stats-bar-inner" id="statsBarInner">
+    <div class="stat-block reveal">
+      <div class="stat-block-num">10<span>+</span></div>
+      <div class="stat-block-label">Lat bez obowiązkowych<br>licencji w Polsce (od 2014)<sup class="cite"><a href="#zrodla" style="color:inherit;text-decoration:none">[1]</a></sup></div>
+      <div style="font-family:'DM Mono',monospace;font-size:8px;color:var(--text-muted);letter-spacing:.1em;margin-top:10px;line-height:1.6">Źródło: Ustawa deregulacyjna<br>Dz.U. 2013 poz. 829 · PFRN 2025</div>
+    </div>
+    <div class="stat-block reveal reveal-delay-1">
+      <div class="stat-block-num">~128</div>
+      <div class="stat-block-label">Dni — rekordowy średni czas<br>sprzedaży mieszkania (2025)<sup class="cite"><a href="#zrodla" style="color:inherit;text-decoration:none">[2]</a></sup></div>
+      <div style="font-family:'DM Mono',monospace;font-size:8px;color:var(--text-muted);letter-spacing:.1em;margin-top:10px;line-height:1.6">Źródło: Barometr Metrohouse<br>& Credipass, Rp.pl 2025</div>
+    </div>
+    <div class="stat-block reveal reveal-delay-2">
+      <div class="stat-block-num">20<span>%</span></div>
+      <div class="stat-block-label">Maksymalna różnica między ceną<br>ofertową a transakcyjną (2025)<sup class="cite"><a href="#zrodla" style="color:inherit;text-decoration:none">[2]</a></sup></div>
+      <div style="font-family:'DM Mono',monospace;font-size:8px;color:var(--text-muted);letter-spacing:.1em;margin-top:10px;line-height:1.6">Źródło: Barometr Metrohouse<br>& Credipass Q1 2025</div>
+    </div>
+    <div class="stat-block reveal reveal-delay-3">
+      <div class="stat-block-num">&gt;50<span>%</span></div>
+      <div class="stat-block-label">Klientów oczekuje weryfikacji<br>kwalifikacji agenta<sup class="cite"><a href="#zrodla" style="color:inherit;text-decoration:none">[3]</a></sup></div>
+      <div style="font-family:'DM Mono',monospace;font-size:8px;color:var(--text-muted);letter-spacing:.1em;margin-top:10px;line-height:1.6">Źródło: Badanie PFRN<br>po deregulacji 2014</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== LISTA SECTION ===================== -->
+<section id="lista">
+  <div class="lista-bg"></div>
+
+  <div class="lista-header reveal">
+    <div>
+      <div class="section-label">01 — Czarna Lista</div>
+      <h2 class="lista-title">Niedoróbki<br><em>Branży</em></h2>
+    </div>
+    <div class="lista-subtitle">14 grzechów które psują polskie pośrednictwo nieruchomości</div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs-wrap" id="tabs">
+    <button class="tab-btn active" data-cat="all">Wszystkie</button>
+    <button class="tab-btn" data-cat="wiedza">Wiedza</button>
+    <button class="tab-btn" data-cat="etyka">Etyka</button>
+    <button class="tab-btn" data-cat="komunikacja">Komunikacja</button>
+    <button class="tab-btn" data-cat="marketing">Marketing</button>
+    <button class="tab-btn" data-cat="finanse">Finanse</button>
+  </div>
+
+  <!-- CARDS -->
+  <div class="cards-grid" id="cardsGrid">
+
+    <!-- FEATURED #1 -->
+    <div class="fault-card featured reveal" data-cat="etyka">
+      <div>
+        <div class="card-top">
+          <span class="card-num">01</span>
+          <span class="card-cat-tag">Etyka</span>
+        </div>
+        <div class="severity">
+          <div class="severity-dots">
+            <div class="sev-dot on"></div><div class="sev-dot on"></div><div class="sev-dot on"></div>
+            <div class="sev-dot on"></div><div class="sev-dot on"></div>
+          </div>
+          <span class="severity-label">Krytyczne</span>
+        </div>
+        <div class="card-title">Praca <em>dla obu stron</em><br>jednocześnie</div>
+        <div class="card-sub">Konflikt Interesu</div>
+        <div class="card-body">
+          Agent reprezentuje jednocześnie sprzedającego i kupującego — i twierdzi, że dobrze obsługuje obu. To niemożliwe. Każda ze stron ma sprzeczne interesy finansowe: sprzedający chce więcej, kupujący chce mniej. Agent, który gra na dwa fronty, zawsze kończy jako sługa tego, kto płaci wyższą prowizję. Klient po drugiej stronie dostaje wygodną iluzję opieki.
+        </div>
+        <div class="card-cwaniak">
+          Ja zawsze reprezentuję jedną stronę. Zawsze. Wiem z czyjej kieszeni biorę pieniądze — i ta osoba ma moje 100%.
+        </div>
+        <span class="impact-tag high">↑ Wysoka szkodliwość</span>
+      </div>
+      <div style="position:relative">
+        <div class="card-body" style="margin-top: 0">
+          Praktyka tzw. „podwójnej agencji" jest w Polsce powszechna i legalna, ale etycznie wątpliwa.<sup class="cite"><a href="#zrodla" style="color:inherit;text-decoration:none">[4]</a></sup> W krajach anglosaskich agent musi ujawnić konflikt interesu i uzyskać pisemną zgodę obu stron. W Polsce często klient dowiaduje się o tym z umowy drobnym drukiem — lub nie dowiaduje się wcale.
+        </div>
+        <div class="card-cwaniak">
+          Widziałem transakcje, gdzie „neutralny" agent negocjował cenę sam ze sobą. Efekt? Prowizja od obu, korzyść dla nikogo poza agencją.
+        </div>
+        <span class="impact-tag high" style="margin-top: 20px; display: inline-flex">↑ Dotyczy ~40% transakcji rynkowych</span>
+        <div class="featured-num-huge">01</div>
+      </div>
+    </div>
+
+    <!-- #2 -->
+    <div class="fault-card reveal" data-cat="wiedza">
+      <div class="card-geo"></div>
+      <div class="card-top"><span class="card-num">02</span><span class="card-cat-tag">Wiedza</span></div>
+      <div class="severity"><div class="severity-dots"><div class="sev-dot on"></div><div class="sev-dot on"></div><div class="sev-dot on"></div><div class="sev-dot on"></div><div class="sev-dot"></div></div><span class="severity-label">Poważne</span></div>
+      <div class="card-title">Nieznajomość <em>lokalnego rynku</em></div>
+      <div class="card-sub">Brak Ekspertyzy Lokalnej</div>
+      <div class="card-body">Agent działa w całej Warszawie albo w całej Polsce, nie znając żadnej dzielnicy naprawdę dobrze. Nie wie, że cena przy Puławskiej różni się od ceny o dwie ulice dalej. Nie wie, że w tym budynku są wady ukryte od lat. Wycenia przez porównanie ogłoszeń z OLX — nie transakcji.<sup class="cite"><a href="#zrodla" style="color:inherit;text-decoration:none">[5]</a></sup></div>
+      <div class="card-cwaniak">Znam każdą ulicę na Pradze i Śródmieściu. Jeśli nie znam — nie biorę zlecenia. Prosto.</div>
+      <span class="impact-tag high">↑ Wysoka szkodliwość</span>
+    </div>
+
+    <!-- #3 -->
+    <div class="fault-card reveal reveal-delay-1" data-cat="komunikacja">
+      <div class="card-geo"></div>
+      <div class="card-top"><span class="card-num">03</span><span class="card-cat-tag">Komunikacja</span></div>
+      <div class="severity"><div class="severity-dots"><div class="sev-dot on"></div><div class="sev-dot on"></div><div class="sev-dot on"></div><div class="sev-dot"></div><div class="sev-dot"></div></div><span class="severity-label">Istotne</span></div>
+      <div class="card-title">Znikanie po <em>podpisaniu umowy</em></div>
+      <div class="card-sub">Porzucenie Klienta</div>
+      <div class="card-body">Przed podpisaniem umowy — czatują, odpisują w 5 minut, są dostępni w niedzielę o 22. Po podpisaniu — milczenie. Klient sam musi się domyślać co dalej, pilnować terminów i przypominać o każdym kroku.</div>
+      <div class="card-cwaniak">Transakcja kończy się u rejenta, nie na umowie pośrednictwa. Do tego momentu jestem w kontakcie.</div>
+      <span class="impact-tag high">↑ Wysoka szkodliwość</span>
+    </div>
+
+    <!-- #4 -->
+    <div class="fault-card reveal reveal-delay-2" data-cat="etyka">
+      <div class="card-geo"></div>
+      <div class="card-top"><span class="card-num">04</span><span class="card-cat-tag">Etyka</span></div>
+      <div class="severity"><div class="severity-dots"><div class="sev-dot on"></div><div class="sev-dot on"></div><div class="sev-dot on"></div><div class="sev-dot on"></div><div class="sev-dot on"></div></div><span class="severity-label">Krytyczne</span></div>
+      <div class="card-title">Zatajanie <em>wad nieruchomości</em></div>
+      <div class="card-sub">Uchylanie Informacji</div>
+      <div class="card-body">Agent wie o zawilgoceniu, problematycznej wspólnocie, planowanej autostradzie za oknem albo roszczeniach do działki — i milczy. Priorytetem jest zamknięcie transakcji, nie dobro kupującego.</div>
+      <div class="card-cwaniak">Mówię zawsze. Nawet jeśli to zabija transakcję. Klient wróci — albo poleci kogoś kto wróci. Kłamstwo sprzedaje raz.</div>
+      <span class="impact-tag high">↑ Często prowadzi do sporów sądowych</span>
+    </div>
+
+    <!-- #5 -->
+    <div class="fault-card reveal" data-cat="finanse">
+      <div class="card-geo"></div>
+      <div class="card-top"><span class="card-num">05</span><span class="card-cat-tag">Finanse</span></div>
+      <div class="severity"><div class="severity-dots"><div class="sev-dot on"></div><div class="sev-dot on"></div><div class="sev-dot on"></div><div class="sev-dot on"></div><div class="sev-dot"></div></div><span class="severity-label">Poważne</span></div>
+      <div class="card-title">Nieprzejrzysta <em>struktura prowizji</em></div>
+      <div class="card-sub">Ukryte Koszty</div>
+      <div class="card-body">Prowizja „ustalana indywidualnie", opłaty dodatkowe za przygotowanie dokumentów, za homestaging, za sesję zdjęciową — wszystko w oddzielnych pozycjach i nigdy w pierwszej rozmowie. Klient dowiaduje się o pełnym koszcie zbyt późno, żeby się wycofać bez strat.</div>
+      <div class="card-cwaniak">Moja prowizja to jedna liczba, mówiona na początku. Zero drobnego druku, zero bonusów po drodze.</div>
+      <span class="impact-tag mid">↗ Średnia szkodliwość</span>
+    </div>
+
+    <!-- #6 -->
+    <div class="fault-card reveal reveal-delay-1" data-cat="marketing">
+      <div class="card-geo"></div>
+      <div class="card-top"><span class="card-num">06</span><span class="card-cat-tag">Marketing</span></div>
+      <div class="severity"><div class="severity-dots"><div class="sev-dot on"></div><div class="sev-dot on"></div><div class="sev-dot on"></div><div class="sev-dot"></div><div class="sev-dot"></div></div><span class="severity-label">Istotne</span></div>
+      <div class="card-title">Zdjęcia zrobione <em>telefonem o zmroku</em></div>
+      <div class="card-sub">Marketing Poniżej Zera</div>
+      <div class="card-body">Nieostre fotografie, bałagan w kadrze, ciemne pomieszczenia, zdjęcie zapchanej łazienki jako główne. Ogłoszenie wygląda jak dowód w sprawie kryminalnej, nie jak prezentacja nieruchomości za kilkaset tysięcy złotych.</div>
+      <div class="card-cwaniak">Zdjęcia to pierwsze 3 sekundy decyzji. Inwestuję w fotografa wnętrz i home staging. Bez wyjątków.</div>
+      <span class="impact-tag mid">↗ Wydłuża czas sprzedaży</span>
+    </div>
+
+    <!-- #7 -->
+    <div class="fault-card reveal reveal-delay-2" data-cat="finanse">
+      <div class="card-geo"></div>
+      <div class="card-top"><span class="card-num">07</span><span class="card-cat-tag">Finanse</span></div>
+      <div class="severity"><div class="severity-dots"><div class="sev-dot on"></div><div class="sev-dot on"></div><div class="sev-dot on"></div><div class="sev-dot on"></div><div class="sev-dot"></div></div><span class="severity-label">Poważne</span></div>
+      <div class="card-title">Brak <em>umiejętności negocjacyjnych</em></div>
+      <div class="card-sub">Zostawianie Pieniędzy na Stole</div>
+      <div class="card-body">Agent akceptuje pierwszą ofertę albo negocjuje „żeby zamknąć temat". Nie zna technik negocjacyjnych, nie rozumie psychologii drugiej strony, nie potrafi budować presji ani zwalniać tempa. Klient traci tysiące złotych, których nigdy nie policzy — 87% mieszkań sprzedawanych jest poniżej ceny ofertowej, a w co dziesiątej transakcji rabat sięga 20%.<sup class="cite"><a href="#zrodla" style="color:inherit;text-decoration:none">[2]</a></sup></div>
+      <div class="card-cwaniak">Negocjacja to osobna sztuka. Nauczyłem się jej przez lata i setki transakcji. Nikt mi nie mówi „bierz, co dają".</div>
+      <span class="impact-tag high">↑ Realne straty finansowe klienta</span>
+    </div>
+
+    <!-- FEATURED #8 -->
+    <div class="fault-card featured reveal" data-cat="komunikacja">
+      <div>
+        <div class="card-top"><span class="card-num">08</span><span class="card-cat-tag">Komunikacja</span></div>
+        <div class="severity"><div class="severity-dots"><div class="sev-dot on"></div><div class="sev-dot on"></div><div class="sev-dot on"></div><div class="sev-dot"></div><div class="sev-dot"></div></div><span class="severity-label">Istotne</span></div>
+        <div class="card-title">Fałszywy <em>optymizm</em><br>i obietnice bez pokrycia</div>
+        <div class="card-sub">Zarządzanie Oczekiwaniami</div>
+        <div class="card-body">
+          „Sprzedam w 2 tygodnie", „dostanie pan 800 tysięcy spokojnie", „rynek rośnie, poczekamy i dostaniemy więcej". Agent mówi to, co klient chce usłyszeć — bo boi się trudnej rozmowy. Efekt: klient ma zawyżone oczekiwania, a gdy rzeczywistość weryfikuje, zaczyna winić rynek zamiast agenta.
+        </div>
+        <div class="card-cwaniak">Mówię prawdę — nawet jeśli to nie ta, którą chcesz usłyszeć. Wolę stracić zlecenie niż sprzedawać iluzje.</div>
+        <span class="impact-tag mid">↗ Długoterminowe uszkodzenie zaufania</span>
+      </div>
+      <div style="position:relative">
+        <div class="card-body" style="margin-top:0">
+          Branżowy mit mówi, że klient chce być głaskany po głowie. Tymczasem badania pokazują, że klienci wybierają agentów, którym ufają — a zaufanie buduje się przez szczerość, nie przez obietnice. Agent, który mówi „myślę, że uda się uzyskać 650–680 tysięcy" jest bardziej wiarygodny niż ten, który krzyczy „800 bez problemu!".
+        </div>
+        <div class="card-cwaniak">
+          Prognozuję ostrożnie, dostarczam powyżej prognozy. Tak buduje się reputację przez 15 lat.
+        </div>
+        <div class="featured-num-huge">08</div>
+      </div>
+    </div>
+
+    <!-- #9 -->
+    <div class="fault-card reveal" data-cat="wiedza">
+      <div class="card-geo"></div>
+      <div class="card-top"><span class="card-num">09</span><span class="card-cat-tag">Wiedza</span></div>
+      <div class="severity"><div class="severity-dots"><div class="sev-dot on"></div><div class="sev-dot on"></div><div class="sev-dot on"></div><div class="sev-dot on"></div><div class="sev-dot"></div></div><span class="severity-label">Poważne</span></div>
+      <div class="card-title">Brak <em>due diligence</em><br>przed ofertą</div>
+      <div class="card-sub">Niedostateczna Analiza Prawna</div>
+      <div class="card-body">Agent prezentuje nieruchomość bez sprawdzenia księgi wieczystej, planu miejscowego, stanu zadłużenia, statusu prawnego spółdzielni czy gminy. Klient kupuje „w ciemno" i dopiero u notariusza odkrywa problemy. Obowiązek weryfikacji tych dokumentów przez pośrednika wynika z ustawy o gospodarce nieruchomościami — mimo to praktyka bywa powszechnie omijana.<sup class="cite"><a href="#zrodla" style="color:inherit;text-decoration:none">[1]</a></sup></div>
+      <div class="card-cwaniak">Przed każdą ofertą czytam KW, sprawdzam MPZP i dzwonię do zarządcy. To minimum, nie bonus.</div>
+      <span class="impact-tag high">↑ Ryzyko prawne dla klienta</span>
+    </div>
+
+    <!-- #10 -->
+    <div class="fault-card reveal reveal-delay-1" data-cat="marketing">
+      <div class="card-geo"></div>
+      <div class="card-top"><span class="card-num">10</span><span class="card-cat-tag">Marketing</span></div>
+      <div class="severity"><div class="severity-dots"><div class="sev-dot on"></div><div class="sev-dot on"></div><div class="sev-dot"></div><div class="sev-dot"></div><div class="sev-dot"></div></div><span class="severity-label">Umiarkowane</span></div>
+      <div class="card-title">Masowe wystawianie<br>na <em>wszystkich portalach</em></div>
+      <div class="card-sub">Strategia „Wrzucamy i Czekamy"</div>
+      <div class="card-body">OLX, Otodom, Gratka, Morizon, Facebook Marketplace i kilka lokalnych grup jednocześnie. Brak selekcji, brak targetowania, brak strategii cenowej. Oferta tanieje w oczach kupujących, bo „wisi" za długo bez zainteresowania.</div>
+      <div class="card-cwaniak">Selektuję kanały do profilu klienta. Premium idzie przez sieć prywatnych kontaktów, zanim trafi do internetu.</div>
+      <span class="impact-tag mid">↗ Deprecjacja wartości oferty</span>
+    </div>
+
+    <!-- #11 -->
+    <div class="fault-card reveal reveal-delay-2" data-cat="komunikacja">
+      <div class="card-geo"></div>
+      <div class="card-top"><span class="card-num">11</span><span class="card-cat-tag">Komunikacja</span></div>
+      <div class="severity"><div class="severity-dots"><div class="sev-dot on"></div><div class="sev-dot on"></div><div class="sev-dot"></div><div class="sev-dot"></div><div class="sev-dot"></div></div><span class="severity-label">Umiarkowane</span></div>
+      <div class="card-title">Brak analizy <em>potrzeb klienta</em></div>
+      <div class="card-sub">Sprzedaż Zamiast Słuchania</div>
+      <div class="card-body">Agent pokazuje to, co ma w portfelu — bez pytania o styl życia, plany rodzinne, horyzont inwestycyjny czy faktyczną tolerancję na ryzyko. Klient dostaje katalog, nie doradztwo.</div>
+      <div class="card-cwaniak">Pierwsza godzina to zawsze rozmowa o kliencie — nie o mieszkaniach. Dopiero potem wiem, co szukać.</div>
+      <span class="impact-tag mid">↗ Strata czasu obu stron</span>
+    </div>
+
+    <!-- #12 -->
+    <div class="fault-card reveal" data-cat="etyka">
+      <div class="card-geo"></div>
+      <div class="card-top"><span class="card-num">12</span><span class="card-cat-tag">Etyka</span></div>
+      <div class="severity"><div class="severity-dots"><div class="sev-dot on"></div><div class="sev-dot on"></div><div class="sev-dot on"></div><div class="sev-dot"></div><div class="sev-dot"></div></div><span class="severity-label">Istotne</span></div>
+      <div class="card-title">Presja na <em>szybką decyzję</em></div>
+      <div class="card-sub">Sztuczna Pilność</div>
+      <div class="card-body">„Mam jeszcze dwóch zainteresowanych", „właściciel rozważa podwyżkę ceny", „do jutra musisz się decydować". Sztuczna presja czasowa to klasyczna manipulacja, która działa krótkoterminowo i niszczy zaufanie długoterminowo.</div>
+      <div class="card-cwaniak">Gdy mówię że czas ucieka — to dlatego, że naprawdę ucieka. Nigdy nie kłamię w tej sprawie. Po co mi klaps za jednorazową transakcję?</div>
+      <span class="impact-tag mid">↗ Erozja zaufania do zawodu</span>
+    </div>
+
+    <!-- #13 -->
+    <div class="fault-card reveal reveal-delay-1" data-cat="wiedza">
+      <div class="card-geo"></div>
+      <div class="card-top"><span class="card-num">13</span><span class="card-cat-tag">Wiedza</span></div>
+      <div class="severity"><div class="severity-dots"><div class="sev-dot on"></div><div class="sev-dot on"></div><div class="sev-dot on"></div><div class="sev-dot"></div><div class="sev-dot"></div></div><span class="severity-label">Istotne</span></div>
+      <div class="card-title">Nieumiejętność <em>wyceny rynkowej</em></div>
+      <div class="card-sub">Wycena z Sufitu lub z OLX</div>
+      <div class="card-body">Agent wycenia „na oko" albo bierze aktualną cenę ofertową z portali — nie transakcyjną. Ignoruje stan techniczny, piętro, orientację, jakość zarządcy, plany rewitalizacji okolicy. Efekt: przeceniona lub niedoszacowana nieruchomość i miesiące bez sprzedaży. Różnica między ceną ofertową a transakcyjną sięga średnio 7–10%, w skrajnych przypadkach 20%.<sup class="cite"><a href="#zrodla" style="color:inherit;text-decoration:none">[2]</a><a href="#zrodla" style="color:inherit;text-decoration:none">[5]</a></sup></div>
+      <div class="card-cwaniak">Wycena to rzemiosło. Opieram ją na realnych transakcjach, nie na ogłoszeniach — które bywają fikcją.</div>
+      <span class="impact-tag high">↑ Bezpośrednie straty finansowe</span>
+    </div>
+
+    <!-- #14 -->
+    <div class="fault-card reveal reveal-delay-2" data-cat="finanse">
+      <div class="card-geo"></div>
+      <div class="card-top"><span class="card-num">14</span><span class="card-cat-tag">Finanse</span></div>
+      <div class="severity"><div class="severity-dots"><div class="sev-dot on"></div><div class="sev-dot on"></div><div class="sev-dot"></div><div class="sev-dot"></div><div class="sev-dot"></div></div><span class="severity-label">Umiarkowane</span></div>
+      <div class="card-title">Brak wiedzy <em>podatkowej i prawnej</em></div>
+      <div class="card-sub">Nieznajomość Prawa Nie Chroni</div>
+      <div class="card-body">Agent nie rozumie zasad PIT od sprzedaży nieruchomości, ulgi mieszkaniowej, zasad rękojmi, odpowiedzialności wspólnoty czy problemów z kredytem hipotecznym kupującego. Klient dostaje półprawdy i musi sam szukać prawnika. Tymczasem projekt nowelizacji PFRN z 2024 r. zakłada powrót obligatoryjnego egzaminu zawodowego właśnie po to, by podnieść ten standard.<sup class="cite"><a href="#zrodla" style="color:inherit;text-decoration:none">[1]</a><a href="#zrodla" style="color:inherit;text-decoration:none">[4]</a></sup></div>
+      <div class="card-cwaniak">Nie jestem prawnikiem ani doradcą podatkowym — ale wiem kiedy odesłać klienta do właściwego specjalisty. To też jest część obsługi.</div>
+      <span class="impact-tag low">↓ Do opanowania przez edukację</span>
+    </div>
+
+  </div><!-- /cards-grid -->
+</section>
+
+<!-- SEPARATOR -->
+<div class="art-deco-banner">
+  <span class="banner-ornament">◆</span>
+  <div class="banner-text">„Dobry agent to nie ten, kto zna się na mieszkaniach — to ten, kto zna się na ludziach, którzy w tych mieszkaniach będą żyć."</div>
+  <span class="banner-ornament">◆</span>
+</div>
+
+<!-- ===================== PRINCIPLES ===================== -->
+<section id="principles">
+  <div class="principles-header reveal">
+    <div class="principles-eyebrow">02 — Antidotum</div>
+    <h2 class="principles-title">Jak <em>powinno</em> być</h2>
+  </div>
+  <div class="principles-grid">
+    <div class="principle-item reveal">
+      <div class="principle-num">I</div>
+      <div class="principle-title">Jedna strona,<br><em>pełna lojalność</em></div>
+      <div class="principle-body">Agent zawsze reprezentuje jedną stronę transakcji z pełnym zaangażowaniem. Jasna umowa, jasny zakres, jasna prowizja — przed pierwszym pokazaniem mieszkania.</div>
+    </div>
+    <div class="principle-item reveal reveal-delay-1">
+      <div class="principle-num">II</div>
+      <div class="principle-title">Ekspertyza <em>hyperlokalana</em></div>
+      <div class="principle-body">Znajomość konkretnych ulic, budynków, mikrodzielnic — nie powierzchowna wiedza o całym mieście. Agent specjalista pokonuje agenta generalistę w każdej transakcji.</div>
+    </div>
+    <div class="principle-item reveal reveal-delay-2">
+      <div class="principle-num">III</div>
+      <div class="principle-title">Przejrzystość <em>na każdym etapie</em></div>
+      <div class="principle-body">Regularne raporty ze sprzedaży, otwarte informacje o zainteresowaniu rynku, uczciwa informacja o wadach nieruchomości. Brak niespodzianek to podstawa zaufania.</div>
+    </div>
+    <div class="principle-item reveal reveal-delay-3">
+      <div class="principle-num">IV</div>
+      <div class="principle-title">Praca <em>za wyniki</em>,<br>nie za obecność</div>
+      <div class="principle-body">Prowizja jest uzasadniona tylko wtedy, gdy agent aktywnie pracuje na wynik — nie wtedy, gdy czeka na kupca, który sam się znajdzie. Wartość agenta mierzy się różnicą ceny, nie liczbą spotkań.</div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="cta">
+  <div class="cta-geo"></div>
+  <div class="cta-geo-2"></div>
+  <div class="cta-eyebrow reveal">Sprawdź różnicę</div>
+  <h2 class="cta-title reveal reveal-delay-1">
+    Inaczej<br>
+    <em>się da.</em>
+  </h2>
+  <p class="cta-sub reveal reveal-delay-2">
+    15 lat w warszawskim rynku. Każda transakcja — z pełną dokumentacją, bez konfliktów interesów, bez małego druku.
+  </p>
+  <div class="cta-btns reveal reveal-delay-3">
+    <a href="cwaniak-warszawski__2_.html#kontakt" class="btn-primary"><span>Zadzwoń do Cwaniaka</span></a>
+    <a href="cwaniak-quiz.html" class="btn-secondary"><span>Sprawdź się w quizie</span></a>
+  </div>
+</section>
+
+<!-- ===================== ŹRÓDŁA ===================== -->
+<section id="zrodla" style="background:var(--charcoal);padding:60px 60px 48px;border-top:1px solid rgba(201,169,110,.1)">
+  <div style="max-width:980px;margin:0 auto">
+    <div class="section-label" style="margin-bottom:16px">Źródła Danych</div>
+
+    <!-- Numbered legend -->
+    <div class="cite-legend" style="margin-bottom:32px">
+      <div class="cite-badge"><span>[1]</span> Ustawa deregulacyjna 2013 · PFRN 2025</div>
+      <div class="cite-badge"><span>[2]</span> Barometr Metrohouse &amp; Credipass Q1 2025</div>
+      <div class="cite-badge"><span>[3]</span> Badanie PFRN — jakość branży po deregulacji</div>
+      <div class="cite-badge"><span>[4]</span> INNPoland 2025 · PFRN Kabaj / Rp.pl kwiecień 2025</div>
+      <div class="cite-badge"><span>[5]</span> NBP Raport 2024 · Metrohouse / Parkiet.com</div>
+    </div>
+
+    <div class="zrodla-grid">
+
+      <div style="background:var(--charcoal);padding:28px 24px">
+        <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.25em;color:var(--gold);text-transform:uppercase;margin-bottom:14px">01 — Regulacje Prawne</div>
+        <div style="font-size:12px;color:var(--text-light);line-height:1.8">
+          <div style="margin-bottom:10px"><strong style="color:var(--ecru);font-size:11px">Ustawa deregulacyjna 2013</strong><br>
+          Ustawa z dnia 13 czerwca 2013 r. o zmianie ustaw regulujących wykonywanie niektórych zawodów.<br>
+          <span style="color:var(--text-muted);font-size:10px">Dz.U. 2013 poz. 829 — obowiązuje od 1.01.2014</span></div>
+          <div><strong style="color:var(--ecru);font-size:11px">PFRN — projekt nowelizacji 2024/2025</strong><br>
+          Polska Federacja Rynku Nieruchomości, Rada Krajowa — projekt zmian w ustawie o gospodarce nieruchomościami, przygotowany grudzień 2024.<br>
+          <span style="color:var(--text-muted);font-size:10px">Rp.pl, 04.04.2025 / pfrn.pl</span></div>
+        </div>
+      </div>
+
+      <div style="background:var(--charcoal);padding:28px 24px">
+        <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.25em;color:var(--gold);text-transform:uppercase;margin-bottom:14px">02 — Rynek Transakcyjny</div>
+        <div style="font-size:12px;color:var(--text-light);line-height:1.8">
+          <div style="margin-bottom:10px"><strong style="color:var(--ecru);font-size:11px">Barometr Metrohouse & Credipass Q1 2025</strong><br>
+          Dane o czasie sprzedaży (3–4 mies. średnio, do ~128 dni rekordowo), różnicach cen ofertowych vs. transakcyjnych (do 20%), medianie negocjacji 7%.<br>
+          <span style="color:var(--text-muted);font-size:10px">credipass.pl / bigdata.rynekpierwotny.pl, 2025</span></div>
+          <div><strong style="color:var(--ecru);font-size:11px">Metrohouse — raport IV kw. 2024 & I kw. 2025</strong><br>
+          87% mieszkań sprzedanych poniżej ceny ofertowej; w 10% transakcji rabaty sięgały 20%.<br>
+          <span style="color:var(--text-muted);font-size:10px">Rp.pl, 27.03.2025: „Kupujący mocno się targują"</span></div>
+        </div>
+      </div>
+
+      <div style="background:var(--charcoal);padding:28px 24px">
+        <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.25em;color:var(--gold);text-transform:uppercase;margin-bottom:14px">03 — Jakość Branży</div>
+        <div style="font-size:12px;color:var(--text-light);line-height:1.8">
+          <div style="margin-bottom:10px"><strong style="color:var(--ecru);font-size:11px">PFRN — badanie po deregulacji</strong><br>
+          „Ponad 50% klientów oczekuje możliwości potwierdzenia kwalifikacji osób, którym powierza swoje sprawy." — Wiceprezydent PFRN Grzegorz Dobrowolski, Polskie Radio.<br>
+          <span style="color:var(--text-muted);font-size:10px">pprn.pl / prnews.pl 2017</span></div>
+          <div><strong style="color:var(--ecru);font-size:11px">PFRN / Rzecznik Jerzy Sobański</strong><br>
+          „Deregulacja negatywnie wpłynęła na prestiż zawodu. Na rynku pojawiły się nieuczciwe firmy i pseudopośrednicy." Rejestr PFRN obejmuje ~8 tys. licencjonowanych agentów.<br>
+          <span style="color:var(--text-muted);font-size:10px">prawo.pl, sierpień 2018</span></div>
+        </div>
+      </div>
+
+      <div style="background:var(--charcoal);padding:28px 24px">
+        <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.25em;color:var(--gold);text-transform:uppercase;margin-bottom:14px">04 — Patologie Rynkowe</div>
+        <div style="font-size:12px;color:var(--text-light);line-height:1.8">
+          <div style="margin-bottom:10px"><strong style="color:var(--ecru);font-size:11px">INNPoland — raport patologii 2025</strong><br>
+          Opis praktyki podwójnej prowizji, kradzieży ogłoszeń, zaniżania wycen we współpracy z rzeczoznawcami. Rząd przygotowuje zakaz podwójnej prowizji.<br>
+          <span style="color:var(--text-muted);font-size:10px">innpoland.pl, 2025: „Rząd bierze się za pośredników"</span></div>
+          <div><strong style="color:var(--ecru);font-size:11px">Wiceprezydent PFRN Krzysztof Kabaj</strong><br>
+          „Po ponad dekadzie można stwierdzić: zmiany w prawie nie wpłynęły dobrze na rynek. Klienci mówią: wziął kilkanaście tysięcy za otwarcie drzwi."<br>
+          <span style="color:var(--text-muted);font-size:10px">Rp.pl, 04.04.2025</span></div>
+        </div>
+      </div>
+
+      <div style="background:var(--charcoal);padding:28px 24px">
+        <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.25em;color:var(--gold);text-transform:uppercase;margin-bottom:14px">05 — Rynek Nieruchomości</div>
+        <div style="font-size:12px;color:var(--text-light);line-height:1.8">
+          <div style="margin-bottom:10px"><strong style="color:var(--ecru);font-size:11px">NBP — Raport roczny rynek nieruchomości 2024</strong><br>
+          Cykliczne materiały analityczne NBP — dane o cenach transakcyjnych i ofertowych, dynamice kredytowej i strukturze rynku mieszkaniowego.<br>
+          <span style="color:var(--text-muted);font-size:10px">nbp.pl/rynek-nieruchomosci-raport-roczny-2024</span></div>
+          <div><strong style="color:var(--ecru);font-size:11px">Marcin Jańczuk, Metrohouse (Parkiet.com)</strong><br>
+          Średni czas sprzedaży w Warszawie: 3 miesiące; poza stolicą: 4,5 miesiąca. Różnice cen ofertowa vs. transakcyjna sięgają 10% (Q4 2024).<br>
+          <span style="color:var(--text-muted);font-size:10px">parkiet.com, 19.12.2025</span></div>
+        </div>
+      </div>
+
+      <div style="background:var(--charcoal);padding:28px 24px">
+        <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.25em;color:var(--gold);text-transform:uppercase;margin-bottom:14px">06 — Disclaimer</div>
+        <div style="font-size:12px;color:var(--text-light);line-height:1.8">
+          <p style="margin-bottom:12px">Dane statystyczne w sekcji „Czarna Lista" opierają się na publicznie dostępnych raportach branżowych i wypowiedziach przedstawicieli organizacji zawodowych. Opisy poszczególnych niedoróbek mają charakter jakościowy i odzwierciedlają obserwacje środowiskowe, a nie wyniki reprezentatywnych badań ilościowych.</p>
+          <p style="color:var(--text-muted)">Strona jest materiałem edukacyjnym i wizerunkowym agencji Cwaniak Warszawski. Nie stanowi porady prawnej ani finansowej.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div>
+    <div class="footer-logo">
+      <div class="logo-mark" style="width:24px;height:24px;border:1px solid var(--gold);transform:rotate(45deg);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <span style="display:block;width:8px;height:8px;background:var(--gold)"></span>
+      </div>
+      Cwaniak Warszawski
+    </div>
+    <div class="footer-tagline">Butikowa Agencja Nieruchomości<br>Zaufany przewodnik po stolicy od 2009 roku.</div>
+  </div>
+  <div style="text-align:center">
+    <svg width="120" height="40" viewBox="0 0 120 40" fill="none" style="display:block;margin:0 auto 12px">
+      <line x1="0" y1="20" x2="45" y2="20" stroke="#C9A96E" stroke-width="0.5" stroke-opacity="0.4"/>
+      <rect x="50" y="14" width="12" height="12" transform="rotate(45 56 20)" fill="none" stroke="#C9A96E" stroke-width="0.8" stroke-opacity="0.5"/>
+      <rect x="54" y="17" width="6" height="6" transform="rotate(45 57 20)" fill="#C9A96E" fill-opacity="0.2" stroke="#C9A96E" stroke-width="0.5"/>
+      <line x1="75" y1="20" x2="120" y2="20" stroke="#C9A96E" stroke-width="0.5" stroke-opacity="0.4"/>
+    </svg>
+    <div class="footer-copy">© 2025 Cwaniak Warszawski<br>Wszelkie prawa zastrzeżone</div>
+  </div>
+  <div class="footer-right">
+    <span class="footer-phone">+48 111 222 333</span>
+    <div class="footer-address">ul. Ząbkowska 1<br>03-736 Warszawa, Praga<br><span style="color:var(--gold);font-size:10px;letter-spacing:.1em"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="412236202f28202a01362033323b2036206f312d">[email&#160;protected]</a></span></div>
+  </div>
+</footer>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+// HAMBURGER MENU
+const hamburger = document.getElementById('hamburger');
+const navDrawer = document.getElementById('navDrawer');
+hamburger.addEventListener('click', () => {
+  hamburger.classList.toggle('open');
+  navDrawer.classList.toggle('open');
+});
+// Close drawer on link click
+navDrawer.querySelectorAll('a').forEach(a => {
+  a.addEventListener('click', () => {
+    hamburger.classList.remove('open');
+    navDrawer.classList.remove('open');
+  });
+});
+
+// DISABLE CURSOR ON TOUCH
+if ('ontouchstart' in window) {
+  document.getElementById('cursor').style.display = 'none';
+  document.getElementById('cursorRing').style.display = 'none';
+  document.body.style.cursor = 'auto';
+}
+
+// CURSOR
+const cursor = document.getElementById('cursor');
+const ring   = document.getElementById('cursorRing');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cursor.style.left=mx+'px';cursor.style.top=my+'px';});
+(function animRing(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(animRing);})();
+document.querySelectorAll('a,button,.fault-card').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cursor.style.width='6px';cursor.style.height='6px';ring.style.width='52px';ring.style.height='52px';});
+  el.addEventListener('mouseleave',()=>{cursor.style.width='10px';cursor.style.height='10px';ring.style.width='36px';ring.style.height='36px';});
+});
+
+// SCROLL REVEAL
+const ro = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); });
+},{threshold:.08, rootMargin:'0px 0px -40px 0px'});
+document.querySelectorAll('.reveal').forEach(el=>ro.observe(el));
+
+// NAV SCROLL
+window.addEventListener('scroll',()=>{
+  document.getElementById('navbar').style.borderBottomColor =
+    window.scrollY>60 ? 'rgba(201,169,110,.25)' : 'rgba(201,169,110,.15)';
+});
+
+// TABS
+const tabs = document.querySelectorAll('.tab-btn');
+const cards = document.querySelectorAll('.fault-card');
+tabs.forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    tabs.forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    const cat =
